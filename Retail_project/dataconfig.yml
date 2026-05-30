@@ -1,0 +1,77 @@
+# =====================================================================
+# Multi-Entity Retail Declarative Configuration
+# Storage: azstoragetraining (retail-project container)
+# Catalog: az_adb_simbus_training | Schema: retail
+# =====================================================================
+
+bronze:
+  orders:
+    source_path: "abfss://retail-project@azstoragetraining.dfs.core.windows.net/retail/orders/"
+    target_table: "az_adb_simbus_training.retail.bronze_orders"
+    checkpoint: "dbfs:/checkpoints/retail/bronze_orders"
+    
+  order_items:
+    source_path: "abfss://retail-project@azstoragetraining.dfs.core.windows.net/retail/order_items/"
+    target_table: "az_adb_simbus_training.retail.bronze_order_items"
+    checkpoint: "dbfs:/checkpoints/retail/bronze_order_items"
+    
+  products:
+    source_path: "abfss://retail-project@azstoragetraining.dfs.core.windows.net/retail/products/"
+    target_table: "az_adb_simbus_training.retail.bronze_products"
+    checkpoint: "dbfs:/checkpoints/retail/bronze_products"
+    
+  customers:
+    source_path: "abfss://retail-project@azstoragetraining.dfs.core.windows.net/retail/customers/"
+    target_table: "az_adb_simbus_training.retail.bronze_customers"
+    checkpoint: "dbfs:/checkpoints/retail/bronze_customers"
+
+silver:
+  orders:
+    source_table: "az_adb_simbus_training.retail.bronze_orders"
+    target_table: "az_adb_simbus_training.retail.silver_orders"
+    checkpoint: "dbfs:/checkpoints/retail/silver_orders"
+    data_quality_filters:
+      order_id: "is_not_null"
+      customer_id: "is_not_null"
+
+  order_items:
+    source_table: "az_adb_simbus_training.retail.bronze_order_items"
+    target_table: "az_adb_simbus_training.retail.silver_order_items"
+    checkpoint: "dbfs:/checkpoints/retail/silver_order_items"
+    data_quality_filters:
+      item_id: "is_not_null"
+      quantity: "quantity > 0"
+      unit_price: "unit_price >= 0"
+
+  products:
+    source_table: "az_adb_simbus_training.retail.bronze_products"
+    target_table: "az_adb_simbus_training.retail.silver_products"
+    checkpoint: "dbfs:/checkpoints/retail/silver_products"
+    data_quality_filters:
+      product_id: "is_not_null"
+
+  customers:
+    source_table: "az_adb_simbus_training.retail.bronze_customers"
+    target_table: "az_adb_simbus_training.retail.silver_customers"
+    checkpoint: "dbfs:/checkpoints/retail/silver_customers"
+    data_quality_filters:
+      customer_id: "is_not_null"
+      email: "email LIKE '%@%'"
+
+gold:
+  source_tables:
+    orders: "az_adb_simbus_training.retail.silver_orders"
+    items: "az_adb_simbus_training.retail.silver_order_items"
+    products: "az_adb_simbus_training.retail.silver_products"
+    customers: "az_adb_simbus_training.retail.silver_customers"
+    
+  target_table: "az_adb_simbus_training.retail.gold_sales_obt"
+  
+  aggregation_keys:
+    - "order_date"
+    - "category"
+    
+  metrics:
+    total_revenue: "sum(quantity * unit_price)"
+    total_items_sold: "sum(quantity)"
+    unique_orders: "count(DISTINCT order_id)"

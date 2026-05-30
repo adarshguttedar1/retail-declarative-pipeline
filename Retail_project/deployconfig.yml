@@ -1,0 +1,62 @@
+# ============================================================================
+# Databricks Asset Bundle (DAB) Orchestration
+# Environment: PRODUCTION ONLY
+# ============================================================================
+
+bundle:
+  name: retail-declarative-pipeline
+
+targets:
+  prod:
+    default: true
+    workspace:
+      # Replace with your actual Databricks Production Workspace URL
+      host: https://<your-prod-azure-databricks-workspace-url>.azuredatabricks.net
+
+resources:
+  jobs:
+    retail_orchestration_job:
+      name: Retail_Medallion_Pipeline_PROD
+      
+      # Run daily at 2:00 AM UTC
+      schedule:
+        quartz_cron_expression: "0 0 2 * * ?"
+        timezone_id: "UTC"
+        
+      max_concurrent_runs: 1 
+      
+      job_clusters:
+        - job_cluster_key: shared_medallion_compute
+          new_cluster:
+            spark_version: 15.4.x-scala2.12
+            node_type_id: Standard_D4ds_v5
+            num_workers: 2
+            spark_conf:
+              spark.databricks.delta.optimizeWrite.enabled: "true"
+              spark.databricks.delta.autoCompact.enabled: "true"
+      
+      tasks:
+        - task_key: 01_run_bronze
+          job_cluster_key: shared_medallion_compute
+          spark_python_task:
+            python_file: src/bronze/ingest_bronze.py
+            # Hands the Brain to the Muscle
+            parameters: ["resources/retail_pipeline.yml"]
+
+        - task_key: 02_run_silver
+          depends_on:
+            - task_key: 01_run_bronze
+          job_cluster_key: shared_medallion_compute
+          spark_python_task:
+            python_file: src/silver/process_silver.py
+            # Hands the Brain to the Muscle
+            parameters: ["resources/retail_pipeline.yml"]
+
+        - task_key: 03_run_gold
+          depends_on:
+            - task_key: 02_run_silver
+          job_cluster_key: shared_medallion_compute
+          spark_python_task:
+            python_file: src/gold/aggregate_gold.py
+            # Hands the Brain to the Muscle
+            parameters: ["resources/retail_pipeline.yml"]

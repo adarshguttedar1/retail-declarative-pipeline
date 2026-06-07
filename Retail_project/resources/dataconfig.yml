@@ -6,57 +6,64 @@
 
 bronze:
   orders:
-    source_path: "abfss://retail-project@azstoragetraining.dfs.core.windows.net/retail/orders/"
+    source_path: "/Volumes/az_adb_simbus_training/retail/raw_landing/orders/"
     target_table: "az_adb_simbus_training.retail.bronze_orders"
-    checkpoint: "dbfs:/checkpoints/retail/bronze_orders"
+    checkpoint: "/Volumes/az_adb_simbus_training/retail/raw_landing/checkpoints/bronze_orders"
     
   order_items:
-    source_path: "abfss://retail-project@azstoragetraining.dfs.core.windows.net/retail/order_items/"
+    source_path: "/Volumes/az_adb_simbus_training/retail/raw_landing/order_items/"
     target_table: "az_adb_simbus_training.retail.bronze_order_items"
-    checkpoint: "dbfs:/checkpoints/retail/bronze_order_items"
+    checkpoint: "/Volumes/az_adb_simbus_training/retail/raw_landing/checkpoints/bronze_order_items"
     
   products:
-    source_path: "abfss://retail-project@azstoragetraining.dfs.core.windows.net/retail/products/"
+    source_path: "/Volumes/az_adb_simbus_training/retail/raw_landing/products/"
     target_table: "az_adb_simbus_training.retail.bronze_products"
-    checkpoint: "dbfs:/checkpoints/retail/bronze_products"
+    checkpoint: "/Volumes/az_adb_simbus_training/retail/raw_landing/checkpoints/bronze_productss"
     
   customers:
-    source_path: "abfss://retail-project@azstoragetraining.dfs.core.windows.net/retail/customers/"
+    source_path: "/Volumes/az_adb_simbus_training/retail/raw_landing/customers/"
     target_table: "az_adb_simbus_training.retail.bronze_customers"
-    checkpoint: "dbfs:/checkpoints/retail/bronze_customers"
+    checkpoint: "/Volumes/az_adb_simbus_training/retail/raw_landing/checkpoints/bronze_customers"
 
 silver:
   orders:
     source_table: "az_adb_simbus_training.retail.bronze_orders"
     target_table: "az_adb_simbus_training.retail.silver_orders"
-    checkpoint: "dbfs:/checkpoints/retail/silver_orders"
+    checkpoint: "/Volumes/az_adb_simbus_training/retail/raw_landing/checkpoints/silver_orders2"
     data_quality_filters:
       order_id: "is_not_null"
       customer_id: "is_not_null"
+      order_purchase_timestamp: "is_not_null"
+      order_status: "order_status IN ('delivered', 'shipped', 'invoiced')"
 
   order_items:
     source_table: "az_adb_simbus_training.retail.bronze_order_items"
     target_table: "az_adb_simbus_training.retail.silver_order_items"
-    checkpoint: "dbfs:/checkpoints/retail/silver_order_items"
+    checkpoint: "/Volumes/az_adb_simbus_training/retail/raw_landing/checkpoints/silver_order_items2"
     data_quality_filters:
-      item_id: "is_not_null"
-      quantity: "quantity > 0"
-      unit_price: "unit_price >= 0"
+      order_item_id: "is_not_null"
+      product_id: "is_not_null"
+      price: "price >= 0"
 
   products:
     source_table: "az_adb_simbus_training.retail.bronze_products"
     target_table: "az_adb_simbus_training.retail.silver_products"
-    checkpoint: "dbfs:/checkpoints/retail/silver_products"
+    checkpoint: "/Volumes/az_adb_simbus_training/retail/raw_landing/checkpoints/silver_products2"
     data_quality_filters:
       product_id: "is_not_null"
+     
+     
 
   customers:
     source_table: "az_adb_simbus_training.retail.bronze_customers"
     target_table: "az_adb_simbus_training.retail.silver_customers"
-    checkpoint: "dbfs:/checkpoints/retail/silver_customers"
+    checkpoint: "/Volumes/az_adb_simbus_training/retail/raw_landing/checkpoints/silver_customers2"
+    data_cleaning:
+      customer_unique_id: "trim"
     data_quality_filters:
       customer_id: "is_not_null"
-      email: "email LIKE '%@%'"
+      customer_unique_id: "is_not_null"
+  
 
 gold:
   source_tables:

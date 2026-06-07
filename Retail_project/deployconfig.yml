@@ -1,62 +1,55 @@
-# ============================================================================
-# Databricks Asset Bundle (DAB) Orchestration
-# Environment: PRODUCTION ONLY
-# ============================================================================
-
 bundle:
-  name: retail-declarative-pipeline
+  name: retail_project
 
-targets:
-  prod:
-    default: true
-    workspace:
-      # Replace with your actual Databricks Production Workspace URL
-      host: https://<your-prod-azure-databricks-workspace-url>.azuredatabricks.net
+# This ensures your code is uploaded to the workspace before the job runs
+workspace:
+  root_path: /Users/${workspace.current_user.userName}/.bundle/${bundle.name}/${bundle.environment}
 
 resources:
   jobs:
-    retail_orchestration_job:
-      name: Retail_Medallion_Pipeline_PROD
+    retail_medallion_pipeline:
+      name: "Retail Medallion Pipeline (Serverless)"
       
-      # Run daily at 2:00 AM UTC
-      schedule:
-        quartz_cron_expression: "0 0 2 * * ?"
-        timezone_id: "UTC"
-        
-      max_concurrent_runs: 1 
-      
-      job_clusters:
-        - job_cluster_key: shared_medallion_compute
-          new_cluster:
-            spark_version: 15.4.x-scala2.12
-            node_type_id: Standard_D4ds_v5
-            num_workers: 2
-            spark_conf:
-              spark.databricks.delta.optimizeWrite.enabled: "true"
-              spark.databricks.delta.autoCompact.enabled: "true"
-      
+      # Step 1: Run the Bronze Ingestion
       tasks:
-        - task_key: 01_run_bronze
-          job_cluster_key: shared_medallion_compute
+        - task_key: bronze_ingestion
           spark_python_task:
-            python_file: src/bronze/ingest_bronze.py
-            # Hands the Brain to the Muscle
-            parameters: ["resources/retail_pipeline.yml"]
-
-        - task_key: 02_run_silver
+            python_file: ./src/bronze/ingest_bronze.py
+            parameters: 
+              - ./resources/retail_pipeline.yml
+          # Using Serverless Compute for the job
+          compute:
+            job_cluster_key: serverless_compute
+            
+        # Step 2: Run Silver (Only starts if Bronze succeeds)
+        - task_key: silver_processing
           depends_on:
-            - task_key: 01_run_bronze
-          job_cluster_key: shared_medallion_compute
+            - task_key: bronze_ingestion
           spark_python_task:
-            python_file: src/silver/process_silver.py
-            # Hands the Brain to the Muscle
-            parameters: ["resources/retail_pipeline.yml"]
+            python_file: ./src/silver/process_silver.py
+            parameters: 
+              - ./resources/retail_pipeline.yml
+          compute:
+            job_cluster_key: serverless_compute
 
-        - task_key: 03_run_gold
+        # Step 3: Run Gold (Only starts if Silver succeeds)
+        - task_key: gold_aggregation
           depends_on:
-            - task_key: 02_run_silver
-          job_cluster_key: shared_medallion_compute
+            - task_key: silver_processing
           spark_python_task:
-            python_file: src/gold/aggregate_gold.py
-            # Hands the Brain to the Muscle
-            parameters: ["resources/retail_pipeline.yml"]
+            python_file: ./src/gold/process_gold.py
+            parameters: 
+              - ./resources/retail_pipeline.yml
+          compute:
+            job_cluster_key: serverless_compute
+
+      # Define the Serverless compute cluster for the job
+      job_clusters:
+        - job_cluster_key: serverless_compute
+          new_cluster:
+            spark_version: 14.3.x-scala2.12
+            node_type_id: Standard_DS3_v2
+            num_workers: 2 
+            # Note: Depending on your exact Databricks tier, native Serverless Job 
+            # syntax might just require omitting the 'job_clusters' block entirely. 
+            # If this cluster fails to deploy, remove the job_clusters block.

@@ -1,55 +1,62 @@
 bundle:
   name: retail_project
 
-# This ensures your code is uploaded to the workspace before the job runs
 workspace:
   root_path: /Users/${workspace.current_user.userName}/.bundle/${bundle.name}/${bundle.environment}
 
 resources:
   jobs:
     retail_medallion_pipeline:
-      name: "Retail Medallion Pipeline (Serverless)"
+      name: "Retail Medallion Pipeline"
       
-      # Step 1: Run the Bronze Ingestion
+      # The automated daily trigger
+      triggers:
+        periodic:
+          cron: "0 0 0 * * ?" 
+          timezone_id: "UTC"
+
       tasks:
+        # Step 1: Bronze Layer 
         - task_key: bronze_ingestion
           spark_python_task:
-            python_file: ./src/bronze/ingest_bronze.py
+            python_file: ./src/Bronze.py      # <-- Updated Path
             parameters: 
               - ./resources/retail_pipeline.yml
-          # Using Serverless Compute for the job
           compute:
             job_cluster_key: serverless_compute
             
-        # Step 2: Run Silver (Only starts if Bronze succeeds)
+        # Step 2: Silver Layer 
         - task_key: silver_processing
           depends_on:
             - task_key: bronze_ingestion
           spark_python_task:
-            python_file: ./src/silver/process_silver.py
+            python_file: ./src/Silver.py      # <-- Updated Path
             parameters: 
               - ./resources/retail_pipeline.yml
           compute:
             job_cluster_key: serverless_compute
 
-        # Step 3: Run Gold (Only starts if Silver succeeds)
+        # Step 3: Gold Layer 
         - task_key: gold_aggregation
           depends_on:
             - task_key: silver_processing
-          spark_python_task:
-            python_file: ./src/gold/process_gold.py
-            parameters: 
-              - ./resources/retail_pipeline.yml
-          compute:
-            job_cluster_key: serverless_compute
+          sql_task:
+            query:
+              file_path: ./src/Gold.sql       # <-- Updated Path
+            warehouse_id: ${resources.sql_warehouses.gold_serverless_warehouse.id}
 
-      # Define the Serverless compute cluster for the job
+      # Job Cluster Definition for Python Tasks
       job_clusters:
         - job_cluster_key: serverless_compute
           new_cluster:
             spark_version: 14.3.x-scala2.12
             node_type_id: Standard_DS3_v2
             num_workers: 2 
-            # Note: Depending on your exact Databricks tier, native Serverless Job 
-            # syntax might just require omitting the 'job_clusters' block entirely. 
-            # If this cluster fails to deploy, remove the job_clusters block.
+
+  # Serverless Warehouse for SQL Materialized Views
+  sql_warehouses:
+    gold_serverless_warehouse:
+      name: "Gold_Pipeline_Serverless"
+      cluster_size: "2X-Small"
+      enable_serverless_compute: true
+      auto_stop_mins: 10

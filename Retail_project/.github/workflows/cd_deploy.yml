@@ -1,0 +1,30 @@
+name: CD - Deploy to Databricks
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    name: "Deploy Bundle to Target"
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. Pull the latest merged code from the main branch
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      # 2. Install the Databricks CLI
+      - name: Install Databricks CLI
+        uses: databricks/setup-cli@v0.221.0
+
+      # 3. Authenticate and Deploy to the 'dev' target
+      - name: Deploy Databricks Bundle
+        env:
+          DATABRICKS_HOST: ${{ secrets.DATABRICKS_HOST }}
+          DATABRICKS_CLIENT_ID: ${{ secrets.DATABRICKS_CLIENT_ID }}
+          DATABRICKS_CLIENT_SECRET: ${{ secrets.DATABRICKS_CLIENT_SECRET }}
+        run: |
+          echo "Deploying Databricks Asset Bundle..."
+          databricks bundle deploy -t dev

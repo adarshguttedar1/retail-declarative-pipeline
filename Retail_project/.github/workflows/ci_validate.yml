@@ -1,0 +1,30 @@
+name: CI - Validate Databricks Bundle
+
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  validate:
+    name: "Validate Bundle Configuration"
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. Pull the code from the Pull Request
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      # 2. Install the Databricks CLI on the GitHub Runner
+      - name: Install Databricks CLI
+        uses: databricks/setup-cli@v0.221.0
+
+      # 3. Authenticate and Validate (Does NOT deploy)
+      - name: Validate Bundle
+        env:
+          DATABRICKS_HOST: ${{ secrets.DATABRICKS_HOST }}
+          DATABRICKS_CLIENT_ID: ${{ secrets.DATABRICKS_CLIENT_ID }}
+          DATABRICKS_CLIENT_SECRET: ${{ secrets.DATABRICKS_CLIENT_SECRET }}
+        run: |
+          echo "Validating Databricks Asset Bundle syntax..."
+          databricks bundle validate

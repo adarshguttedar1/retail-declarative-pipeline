@@ -65,20 +65,3 @@ silver:
       customer_unique_id: "is_not_null"
   
 
-gold:
-  source_tables:
-    orders: "az_adb_simbus_training.retail.silver_orders"
-    items: "az_adb_simbus_training.retail.silver_order_items"
-    products: "az_adb_simbus_training.retail.silver_products"
-    customers: "az_adb_simbus_training.retail.silver_customers"
-    
-  target_table: "az_adb_simbus_training.retail.gold_sales_obt"
-  
-  aggregation_keys:
-    - "order_date"
-    - "category"
-    
-  metrics:
-    total_revenue: "sum(quantity * unit_price)"
-    total_items_sold: "sum(quantity)"
-    unique_orders: "count(DISTINCT order_id)"

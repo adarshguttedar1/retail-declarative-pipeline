@@ -1,16 +1,21 @@
 bundle:
-  # FIX 1: Appended '_v2' to bypass the stuck lock file folder entirely
-  name: retail_project_v2
+  name: retail_project_v3
 
-workspace:
-  root_path: /Shared/deployments/.bundle/${bundle.name}/${bundle.environment}
+# The Enterprise Standard: Explicitly defining targets and infrastructure permissions
+targets:
+  default:
+    default: true
+    workspace:
+      root_path: /Shared/deployments/.bundle/${bundle.name}/${bundle.environment}
+    permissions:
+      - level: CAN_MANAGE
+        group_name: users
 
 resources:
   jobs:
     retail_medallion_pipeline:
       name: "Retail Medallion Pipeline"
       
-      # FIX 2: Replaced 'trigger' with 'schedule' for Cron compatibility
       schedule:
         quartz_cron_expression: "0 0 0 * * ?" 
         timezone_id: "UTC"

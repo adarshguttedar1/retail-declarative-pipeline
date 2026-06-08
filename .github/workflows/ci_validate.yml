@@ -17,7 +17,7 @@ jobs:
 
       # 2. Install the Databricks CLI on the GitHub Runner
       - name: Install Databricks CLI
-        uses: databricks/setup-cli@v0.221.0
+        uses: databricks/setup-cli@main
 
       # 3. Authenticate and Validate (Does NOT deploy)
       - name: Validate Bundle

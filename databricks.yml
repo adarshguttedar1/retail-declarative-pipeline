@@ -1,5 +1,6 @@
 bundle:
-  name: retail_project
+  # FIX 1: Appended '_v2' to bypass the stuck lock file folder entirely
+  name: retail_project_v2
 
 workspace:
   root_path: /Users/${workspace.current_user.userName}/.bundle/${bundle.name}/${bundle.environment}
@@ -9,11 +10,10 @@ resources:
     retail_medallion_pipeline:
       name: "Retail Medallion Pipeline"
       
-      # FIX 1: Singular 'trigger'
-      trigger:
-        periodic:
-          cron: "0 0 0 * * ?" 
-          timezone_id: "UTC"
+      # FIX 2: Replaced 'trigger' with 'schedule' for Cron compatibility
+      schedule:
+        quartz_cron_expression: "0 0 0 * * ?" 
+        timezone_id: "UTC"
 
       tasks:
         - task_key: bronze_ingestion
@@ -21,7 +21,6 @@ resources:
             python_file: ./src/Bronze.py
             parameters: 
               - ./resources/retail_pipeline.yml
-          # FIX 2: Moved job_cluster_key out of a compute block
           job_cluster_key: serverless_compute
             
         - task_key: silver_processing
@@ -37,7 +36,6 @@ resources:
           depends_on:
             - task_key: silver_processing
           sql_task:
-            # FIX 3: Changed 'query' to 'file' and 'file_path' to 'path'
             file:
               path: ./src/Gold.sql
             warehouse_id: ${resources.sql_warehouses.gold_serverless_warehouse.id}

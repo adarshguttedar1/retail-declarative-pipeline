@@ -5,7 +5,7 @@ targets:
   prod:
     default: true
     workspace:
-      root_path: root_path: /Workspace/Users/adarsh.guttedar@simbustech.com/Production_Pipelines/Retail/.bundle/${bundle.name}/${bundle.environment}
+      root_path: "/Workspace/Users/adarsh.guttedar@simbustech.com/Production_Pipelines/Retail/.bundle/${bundle.name}/${bundle.environment}"
 
 resources:
   jobs:

@@ -1,15 +1,11 @@
 bundle:
-  name: retail_project_v3
+  name: retail_project_prod_v1
 
-# The Enterprise Standard: Explicitly defining targets and infrastructure permissions
 targets:
-  default:
+  prod:
     default: true
     workspace:
-      root_path: /Shared/deployments/.bundle/${bundle.name}/${bundle.environment}
-    permissions:
-      - level: CAN_MANAGE
-        group_name: users
+      root_path: root_path: /Workspace/Users/adarsh.guttedar@simbustech.com/Production_Pipelines/Retail/.bundle/${bundle.name}/${bundle.environment}
 
 resources:
   jobs:

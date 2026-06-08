@@ -24,4 +24,4 @@ jobs:
           DATABRICKS_CLIENT_SECRET: ${{ secrets.DATABRICKS_CLIENT_SECRET }}
         run: |
           echo "Deploying Databricks Asset Bundle..."
-          databricks bundle deploy -t dev
+          databricks bundle deploy

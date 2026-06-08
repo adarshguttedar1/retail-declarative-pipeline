@@ -1,8 +1,9 @@
 bundle:
-  name: retail_project_prod_v1
+  name: retail_project_prod_v2
 
 targets:
-  prod:
+  dev:
+    mode: development
     default: true
     workspace:
       root_path: "/Workspace/Users/adarsh.guttedar@simbustech.com/Production_Pipelines/Retail/.bundle/${bundle.name}/${bundle.environment}"

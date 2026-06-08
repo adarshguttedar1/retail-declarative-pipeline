@@ -3,7 +3,7 @@ bundle:
   name: retail_project_v2
 
 workspace:
-  root_path: /Users/${workspace.current_user.userName}/.bundle/${bundle.name}/${bundle.environment}
+  root_path: /Shared/deployments/.bundle/${bundle.name}/${bundle.environment}
 
 resources:
   jobs:

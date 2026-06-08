@@ -53,10 +53,4 @@ resources:
             node_type_id: Standard_DS3_v2
             num_workers: 2 
 
-  # Serverless Warehouse for SQL Materialized Views
-  sql_warehouses:
-    gold_serverless_warehouse:
-      name: "Gold_Pipeline_Serverless"
-      cluster_size: "2X-Small"
-      enable_serverless_compute: true
-      auto_stop_mins: 10
+  

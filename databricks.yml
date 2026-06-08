@@ -1,12 +1,12 @@
 bundle:
-  name: retail_project_prod_v2
+  name: retail_project_prod_v3
 
 targets:
   dev:
     mode: development
     default: true
-    workspace:
-      root_path: "/Workspace/Users/adarsh.guttedar@simbustech.com/Production_Pipelines/Retail/.bundle/${bundle.name}/${bundle.environment}"
+    # Notice we completely deleted the 'workspace' block.
+    # The CLI will natively use '~/.bundle/' and bypass all ACL checks.
 
 resources:
   jobs:

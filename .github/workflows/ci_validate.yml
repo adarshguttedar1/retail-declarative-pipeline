@@ -23,8 +23,7 @@ jobs:
       - name: Validate Bundle
         env:
           DATABRICKS_HOST: ${{ secrets.DATABRICKS_HOST }}
-          DATABRICKS_CLIENT_ID: ${{ secrets.DATABRICKS_CLIENT_ID }}
-          DATABRICKS_CLIENT_SECRET: ${{ secrets.DATABRICKS_CLIENT_SECRET }}
+          DATABRICKS_TOKEN: ${{ secrets.DATABRICKS_TOKEN }}
         run: |
           echo "Validating Databricks Asset Bundle syntax..."
           databricks bundle validate

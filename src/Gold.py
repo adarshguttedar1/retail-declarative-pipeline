@@ -70,7 +70,7 @@ gold_sales_summary = (
     .option("overwriteSchema", "true")
     .saveAsTable(f"{CATALOG}.{SCHEMA}.gold_sales_summary")
 )
-print("✅ gold_sales_summary written successfully")
+print(" gold_sales_summary written successfully")
 
 
 # =============================================================
@@ -120,7 +120,7 @@ gold_product_performance = (
     .option("overwriteSchema", "true")
     .saveAsTable(f"{CATALOG}.{SCHEMA}.gold_product_performance")
 )
-print("✅ gold_product_performance written successfully")
+print(" gold_product_performance written successfully")
 
 
 # =============================================================
@@ -188,4 +188,4 @@ gold_repeat_customers = (
     .option("overwriteSchema", "true")
     .saveAsTable(f"{CATALOG}.{SCHEMA}.gold_repeat_customers")
 )
-print("✅ gold_repeat_customers written successfully")
+print(" gold_repeat_customers written successfully")
